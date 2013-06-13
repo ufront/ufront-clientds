@@ -1,6 +1,7 @@
 {
   "name": "ufront-clientds",
   "license": "MIT",
+  "classPath": "src",
   "tags": ["ufront","db","web","js","neko","php","client","remoting"],
   "description": "ClientDS is a Client Data Store that works with Ufront-ORM and Ufront-Remoting to let you easily fetch, cache and update database objects from the client.",
   "contributors": ["fponticelli","jason"],
@@ -9,6 +10,7 @@
   "url": "https://github.com/ufront/ufront-clientds",
   "dependencies": {
     "ufront-orm": "",
-    "ufront-remoting": ""
+    "ufront-remoting": "",
+    "promhx": ""
   }
 }
