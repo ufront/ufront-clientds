@@ -9,7 +9,6 @@ import ufront.db.ManyToMany;
 import haxe.ds.*;
 import clientds.ClientDsResultSet;
 import clientds.ClientDsRequest;
-import AppPermissions;
 #if server 
 	import sys.db.Manager;
 	import ufront.auth.UserAuth;
