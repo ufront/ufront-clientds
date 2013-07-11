@@ -389,7 +389,8 @@ using tink.core.types.Outcome;
 			for (modelName in req.requests.keys())
 			{
 				var r = req.requests.get(modelName);
-				var clientDs = getClientDsFor(Type.resolveClass(modelName));
+				var model:Class<Object> = cast Type.resolveClass(modelName);
+				var clientDs = getClientDsFor(model);
 
 				// If an all was requested, create/recreate the promise for it
 				if (r.all)
