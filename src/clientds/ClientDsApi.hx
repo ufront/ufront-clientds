@@ -14,10 +14,8 @@ import clientds.ClientDsRequest;
 	import ufront.auth.UserAuth;
 #end 
 
-class ClientDsApi implements RemotingApiClass
+class ClientDsApi extends RemotingApiClass
 {
-	public function new() {}
-
 	public function get(req:ClientDsRequest, fetchRel:Bool):Outcome<ClientDsResultSet, String>
 	{
 		try 
