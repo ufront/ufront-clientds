@@ -10,7 +10,7 @@
   "url": "https://github.com/ufront/ufront-clientds",
   "dependencies": {
     "ufront-orm": "",
-    "ufront-remoting": "",
+    "ufront-mvc": "",
     "promhx": ""
   }
 }
