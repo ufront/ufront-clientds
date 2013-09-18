@@ -70,33 +70,33 @@ class ClientDsApi extends RemotingApiClass
 	*/
 	public function save(map:Map<String, Array<ufront.db.Object>>):StringMap<Array<Outcome<SUId, String>>>
 	{
-			if (map == null) return new StringMap();
+		if (map == null) return new StringMap();
 
-			var retMap = new StringMap();
+		var retMap = new StringMap();
 
-			for (modelName in map.keys())
-			{
-					var objects = map.get(modelName);
-					if (objects != null)
-					{
-							var a:Array<Outcome<SUId, String>> = [];
-							for (o in map.get(modelName))
+		for (modelName in map.keys())
+		{
+				var objects = map.get(modelName);
+				if (objects != null)
+				{
+						var a:Array<Outcome<SUId, String>> = [];
+						for (o in map.get(modelName))
+						{
+							try 
 							{
-								try 
-								{
-										o.save();
-										a.push(o.id.asSuccess());
-								}
-								catch (e:String)
-								{
-										a.push(e.asFailure());
-								}
+									o.save();
+									a.push(o.id.asSuccess());
 							}
-							retMap.set(modelName, a);
-					}
-			}
+							catch (e:String)
+							{
+									a.push(e.asFailure());
+							}
+						}
+						retMap.set(modelName, a);
+				}
+		}
 
-			return retMap;
+		return retMap;
 	}
 
 	/** 
@@ -114,37 +114,37 @@ class ClientDsApi extends RemotingApiClass
 	@:access(sys.db.Manager)
 	public function delete(map:Map<String, Array<SUId>>):StringMap<Array<Outcome<SUId, String>>>
 	{
-			if (map == null) return new StringMap();
+		if (map == null) return new StringMap();
 
-			var retMap = new StringMap();
+		var retMap = new StringMap();
 
-			for (modelName in map.keys())
-			{
-					var objects = map.get(modelName);
-					var model = getModel(modelName);
-					var manager = getManager(model);
-					if (objects != null)
-					{
-							var a:Array<Outcome<SUId, String>> = [];
-							for (id in map.get(modelName))
-							{
-									try 
-									{
-											var tableName = manager.table_name;
-											var quotedID = manager.quoteField('$id');
-											manager.unsafeDelete('DELETE FROM $tableName WHERE `id` = $quotedID');
-											a.push(id.asSuccess());
-									}
-									catch (e:String)
-									{
-											a.push(e.asFailure());
-									}
-							}
-							retMap.set(modelName, a);
-					}
-			}
+		for (modelName in map.keys())
+		{
+				var objects = map.get(modelName);
+				var model = getModel(modelName);
+				var manager = getManager(model);
+				if (objects != null)
+				{
+						var a:Array<Outcome<SUId, String>> = [];
+						for (id in map.get(modelName))
+						{
+								try 
+								{
+										var tableName = manager.table_name;
+										var quotedID = manager.quoteField('$id');
+										manager.unsafeDelete('DELETE FROM $tableName WHERE `id` = $quotedID');
+										a.push(id.asSuccess());
+								}
+								catch (e:String)
+								{
+										a.push(e.asFailure());
+								}
+						}
+						retMap.set(modelName, a);
+				}
+		}
 
-			return retMap;
+		return retMap;
 	}
 
 	@:access(sys.db.Manager)
