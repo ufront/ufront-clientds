@@ -1,7 +1,7 @@
 package clientds;
 
 import sys.db.Types;
-using tink.core.types.Outcome;
+using tink.core.Outcome;
 using Lambda;
 import ufront.remoting.RemotingApiClass;
 import ufront.db.Object;
@@ -21,11 +21,11 @@ class ClientDsApi extends RemotingApiClass
 		try 
 		{
 			var rs = doGet(req, false, fetchRel);
-			return rs.asSuccess();
+			return Success(rs);
 		}
 		catch (e:String)
 		{
-			return e.asFailure();
+			return Failure(e);
 		}
 	}
 
@@ -85,11 +85,11 @@ class ClientDsApi extends RemotingApiClass
 							try 
 							{
 									o.save();
-									a.push(o.id.asSuccess());
+									a.push(Success(o.id));
 							}
 							catch (e:String)
 							{
-									a.push(e.asFailure());
+									a.push(Failure(e));
 							}
 						}
 						retMap.set(modelName, a);
@@ -133,11 +133,11 @@ class ClientDsApi extends RemotingApiClass
 										var tableName = manager.table_name;
 										var quotedID = manager.quoteField('$id');
 										manager.unsafeDelete('DELETE FROM $tableName WHERE `id` = $quotedID');
-										a.push(id.asSuccess());
+										a.push(Success(id));
 								}
 								catch (e:String)
 								{
-										a.push(e.asFailure());
+										a.push(Failure(e));
 								}
 						}
 						retMap.set(modelName, a);

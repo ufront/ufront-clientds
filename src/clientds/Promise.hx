@@ -2,10 +2,9 @@ package clientds;
 
 #if macro
 import haxe.macro.Expr;
-import tink.macro.tools.ExprTools;
 import haxe.macro.Type;
 import haxe.macro.Context;
-using tink.macro.tools.TypeTools;
+using tink.MacroApi;
 import promhx.Promise;
 using Lambda;
 #end
@@ -39,7 +38,7 @@ class Promise<T> extends promhx.Promise<T>
 	 *
 	 * @todo - DRYify this.  Figure out a way to call Promise.when(), and just modify the single line of the return expr.
 	 **/
-	macro public static function when<T>(args:Array<ExprOf<Promise<Dynamic>>>):Expr{
+	macro public static function when<T>(args:Array<ExprOf<Promise<Dynamic>>>):Expr {
 		// just using a simple pos for all expressions
 		var pos = args[0].pos;
 		// Dynamic Complex Type expression
@@ -48,15 +47,15 @@ class Promise<T> extends promhx.Promise<T>
 		var p = "promhx.Promise".asComplexType([d]);
 		var ip = "Iterable".asComplexType([TPType(p)]);
 		//The unknown type for the then function, also used for the promise return
-		var ctmono = Context.typeof(macro null).toComplex(true);
+		var ctmono = Context.typeof(macro null).toComplex();
 		var eargs:Expr; // the array of promises
 		var ecall:Expr; // the function call on the promises
 
 		// multiple argument, with iterable first argument... treat as error for now
-		if (args.length > 1 && ExprTools.is(args[0],ip)){
+		if (args.length > 1 && args[0].is(ip)){
 			Context.error("Only a single Iterable of Promises can be passed", args[1].pos);
-		} else if (ExprTools.is(args[0],ip)){ // Iterable first argument, single argument
-			var cptypes =[Context.typeof(args[0]).toComplex(true)];
+		} else if (args[0].is(ip)){ // Iterable first argument, single argument
+			var cptypes =[Context.typeof(args[0]).toComplex()];
 			eargs = args[0];
 			ecall = macro {
 				var arr = [];
@@ -65,7 +64,7 @@ class Promise<T> extends promhx.Promise<T>
 			}
 		} else { // multiple argument of non-iterables
 			for (a in args){
-				if (ExprTools.is(a,p)){
+				if (a.is(p)){
 					//the types of all the arguments (should be all Promises)
 					var types = args.map(Context.typeof);
 					//the parameters of the Promise types
@@ -76,7 +75,7 @@ class Promise<T> extends promhx.Promise<T>
 							return null;
 						}
 					});
-					var cptypes = ptypes.map(function(x) return x.toComplex(true)).array();
+					var cptypes = ptypes.map(function(x) return x.toComplex()).array();
 					//the macro arguments expressed as an array expression.
 					eargs = {expr:EArrayDecl(args),pos:pos};
 

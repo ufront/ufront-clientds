@@ -4,7 +4,7 @@ import ufront.remoting.*;
 import ufront.db.Object;
 import sys.db.Types;
 using clientds.ClientDsResultSet;
-using tink.core.types.Outcome;
+using tink.core.Outcome;
 
 #if client
 	import clientds.Promise;
@@ -306,9 +306,9 @@ using tink.core.types.Outcome;
 				{
 					case Success(id):
 						o.id = id;
-						p.resolve(o.asSuccess());
+						p.resolve( Success(o) );
 					case Failure(msg):
-						p.resolve('Failed to save $o: $msg'.asFailure());
+						p.resolve( Failure('Failed to save $o: $msg') );
 				}
 			});
 			return p;
@@ -333,9 +333,9 @@ using tink.core.types.Outcome;
 				switch (outcome)
 				{
 					case Success(id):
-						p.resolve(id.asSuccess());
+						p.resolve( Success(id) );
 					case Failure(msg):
-						p.resolve('Failed to delete $modelName[$id]: $msg'.asFailure());
+						p.resolve( Failure('Failed to delete $modelName[$id]: $msg') );
 				}
 			});
 			return p;
@@ -426,7 +426,7 @@ using tink.core.types.Outcome;
 			{
 				// Trace the request
 				#if debug
-					trace ('About to make this ClientDS API Request: \n${req.toString()}');
+					trace ('About to make this ClientDS API Request: \n  ${req.toString()}');
 				#end
 
 				// Make the API call, process the response
@@ -437,9 +437,9 @@ using tink.core.types.Outcome;
 						{
 							case Success(rs): 
 								var map = processResultSet(req, rs);
-								resultSetPromise.resolve(map.asSuccess());
+								resultSetPromise.resolve( Success(map) );
 							case Failure(error): 
-								resultSetPromise.resolve(error.asFailure());
+								resultSetPromise.resolve( Failure(error) );
 						}
 					});
 				}
@@ -451,9 +451,9 @@ using tink.core.types.Outcome;
 						{
 							case Success(rs): 
 								var map = processResultSet(req, rs);
-								resultSetPromise.resolve(map.asSuccess());
+								resultSetPromise.resolve( Success(map) );
 							case Failure(error): 
-								resultSetPromise.resolve(error.asFailure());
+								resultSetPromise.resolve( Failure(error) );
 						}
 					});
 				}
@@ -461,7 +461,7 @@ using tink.core.types.Outcome;
 			}
 			else 
 			{
-				resultSetPromise.resolve(new StringMap().asSuccess());
+				resultSetPromise.resolve( Success(new StringMap()) );
 			}
 			return resultSetPromise;
 		}
@@ -686,6 +686,5 @@ using tink.core.types.Outcome;
 
 			return map;
 		}
-
 	}
 #end 
