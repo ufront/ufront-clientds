@@ -5,8 +5,8 @@
   "tags": ["ufront","db","web","js","neko","php","client","remoting"],
   "description": "ClientDS is a Client Data Store that works with Ufront-ORM and Ufront-Remoting to let you easily fetch, cache and update database objects from the client.",
   "contributors": ["fponticelli","jason"],
-  "releasenote": "Update for compatibility with ufront 1.0.0-beta.1",
-  "version": "1.0.0-beta.1",
+  "releasenote": "Update for compatibility with ufront 1.0.0-beta.3",
+  "version": "1.0.0-beta.2",
   "url": "https://github.com/ufront/ufront-clientds",
   "dependencies": {
     "ufront-orm": "",
