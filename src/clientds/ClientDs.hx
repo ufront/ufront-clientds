@@ -1,6 +1,6 @@
 package clientds;
 
-import ufront.remoting.*;
+import ufront.api.*;
 import ufront.db.Object;
 import sys.db.Types;
 using clientds.ClientDsResultSet;

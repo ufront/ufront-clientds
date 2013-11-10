@@ -3,7 +3,7 @@ package clientds;
 import sys.db.Types;
 using tink.core.Outcome;
 using Lambda;
-import ufront.remoting.RemotingApiClass;
+import ufront.api.UFApi;
 import ufront.db.Object;
 import ufront.db.ManyToMany;
 import haxe.ds.*;
@@ -14,7 +14,7 @@ import clientds.ClientDsRequest;
 	import ufront.auth.UserAuth;
 #end 
 
-class ClientDsApi extends RemotingApiClass
+class ClientDsApi extends UFApi
 {
 	public function get(req:ClientDsRequest, fetchRel:Bool):Outcome<ClientDsResultSet, String>
 	{

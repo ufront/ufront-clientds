@@ -41,7 +41,7 @@ immediately.
 
 You'll need to use ufcommon remoting, and add `clientds.ClientDsApi` to your API context.
 
-    class Api implements RemotingApiContext
+    class Api implements UFApiContext
     {
         // Vendor
         public var clientDsAPI:ClientDsApi;
