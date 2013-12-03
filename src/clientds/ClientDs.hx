@@ -171,24 +171,25 @@ using tink.core.Outcome;
 					});
 				}
 
-				if (newRequests.length > 0)
+				if (newRequests.length > 0 && allPromise == null)
 				{
-					if (allPromise != null)
-					{
-						// If an existing call to all() has been made, wait for that
-						allPromise.then(function (all) {
-							// When that resolves, each instance will resolve, and our list as a whole should resolve...
-							// If not, it means some of the IDs did not exist. Just resolve with the list that did exist...
-							// list() will be populated as each individual one was added to the cache, so we can just add that
-							if (Promise.allSet(allCurrentPromises) == false) { listProm.resolve(list); }
-						});
-					}
-					else
-					{
-						// Otherwise, create a new call just to retrieve these specific objects
-						var req = new ClientDsRequest().getMany(cast model, newRequests);
-						processRequest(req);
-					}
+					// Otherwise, create a new call just to retrieve these specific objects
+					var req = new ClientDsRequest().getMany(cast model, newRequests);
+					processRequest(req);
+
+					// @todo: POSSIBLE GLITCH: if many (but not all) were requested, and some did not exist, we need to resolve that...
+				}
+				else
+				{
+					// If an existing call to all() has been made, wait for that
+					allPromise.then(function (all) {
+						// When that resolves, each instance will resolve, and our list as a whole should resolve...
+						// If not, it means some of the IDs did not exist. Just resolve with the list that did exist...
+						// list() will be populated as each individual one was added to the cache, so we can just add that
+						if (Promise.allSet(allCurrentPromises) == false) { 
+							listProm.resolve(list); 
+						}
+					});
 				}
 			}
 			else 
