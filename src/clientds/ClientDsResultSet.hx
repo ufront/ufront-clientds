@@ -25,8 +25,10 @@ class ClientDsResultSet
 
 	// For writing
 
-	public function addItems(name:String, items:Iterable<Object>)
+	public function addItems(?name:String, items:Iterable<Object>)
 	{
+		if ( name==null ) name = guessName( items );
+
 		// get the IntMap for this model
 		if (!m.exists(name)) m.set(name, new IntMap());
 		var intMap = m.get(name);
@@ -40,18 +42,26 @@ class ClientDsResultSet
 		return intMap;
 	}
 
-	public function addAll(name:String, items:Iterable<Object>)
+	public function addAll(?name:String, items:Iterable<Object>)
 	{
+		if ( name==null ) name = guessName( items );
 		if (!allRequests.has(name)) allRequests.push(name);
 		return addItems(name, items);
 	}
 
-	public function addSearchResults(name:String, criteria:{}, items:Iterable<Object>)
+	public function addSearchResults(?name:String, criteria:{}, items:Iterable<Object>)
 	{
+		if ( name==null ) name = guessName( items );
 		if (!searchRequests.exists(name)) searchRequests.set(name, []);
 		searchRequests.get(name).push(criteria);
 
 		return addItems(name, items);
+	}
+
+	function guessName( items:Iterable<Object> ) {
+		var name = "";
+		for ( i in items ) name = Type.getClassName( Type.getClass(i) );
+		return name;
 	}
 
 	// For reading

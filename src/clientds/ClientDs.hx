@@ -365,6 +365,15 @@ using tink.core.Outcome;
 			return search(criteria);
 		}
 
+		/** Clear any cached objects for this model. **/
+		public function clear()
+		{
+			allPromise = null;
+			for ( key in searchPromises.keys() ) {
+				searchPromises.remove(key);
+			}
+		}
+
 		//
 		// Static methods
 		//
@@ -437,7 +446,7 @@ using tink.core.Outcome;
 						switch(results)
 						{
 							case Success(rs): 
-								var map = processResultSet(req, rs);
+								var map = processResultSet(rs);
 								resultSetPromise.resolve( Success(map) );
 							case Failure(error): 
 								resultSetPromise.resolve( Failure(error) );
@@ -451,7 +460,7 @@ using tink.core.Outcome;
 						switch(resultObj)
 						{
 							case Success(rs): 
-								var map = processResultSet(req, rs);
+								var map = processResultSet(rs);
 								resultSetPromise.resolve( Success(map) );
 							case Failure(error): 
 								resultSetPromise.resolve( Failure(error) );
@@ -575,12 +584,7 @@ using tink.core.Outcome;
 			return p;
 		}
 
-		//
-		// Private members
-		//
-
-
-		static function processResultSet(req:ClientDsRequest, rs:ClientDsResultSet):StringMap<IntMap<Object>>
+		public static function processResultSet(rs:ClientDsResultSet):StringMap<IntMap<Object>>
 		{
 			var map = new StringMap<IntMap<Object>>();
 
