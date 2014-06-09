@@ -11,6 +11,6 @@
   "dependencies": {
     "ufront-orm": "",
     "ufront-mvc": "",
-    "promhx": ""
+    "promhx": "0.2.4"
   }
 }
