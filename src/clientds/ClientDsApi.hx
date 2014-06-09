@@ -11,7 +11,6 @@ import clientds.ClientDsResultSet;
 import clientds.ClientDsRequest;
 #if server 
 	import sys.db.Manager;
-	import ufront.auth.UserAuth;
 #end 
 
 class ClientDsApi extends UFApi

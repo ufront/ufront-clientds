@@ -137,7 +137,6 @@ using tink.core.Outcome;
 				var newRequests = [];
 				var existingPromises = [];
 
-
 				for (id in unfulfilledPromises)
 				{
 					if (ds.exists(id))
@@ -158,34 +157,36 @@ using tink.core.Outcome;
 				{
 					var p = ds.get(id);
 					allCurrentPromises.push(p);
-					p.then(function (obj) { 
-						// Add the object to our return list, and remove it from our list of unfulfilled promises.  
-						list.set(id, obj);
-						unfulfilledPromises.remove(id); 
-						// Once all promises are fulfilled
-						if (unfulfilledPromises.length == 0)
-						{
-							// Faith in humanity, restored
-							listProm.resolve(list);
-						}
-					});
+					p
+						.then(function (obj) { 
+							// Add the object to our return list, and remove it from our list of unfulfilled promises.  
+							list.set(id, obj);
+							unfulfilledPromises.remove(id); 
+							// Once all promises are fulfilled
+							if (unfulfilledPromises.length == 0)
+							{
+								// Faith in humanity, restored
+								listProm.resolve(list);
+							}
+						});
 				}
 
 				if (newRequests.length > 0 && allPromise == null)
 				{
 					// Otherwise, create a new call just to retrieve these specific objects
 					var req = new ClientDsRequest().getMany(cast model, newRequests);
-					processRequest(req);
-
-					// @todo: POSSIBLE GLITCH: if many (but not all) were requested, and some did not exist, we need to resolve that...
+					processRequest(req).then(function (rs) {
+						if (Promise.allSet(allCurrentPromises) == false) { 
+							listProm.resolve(list); 
+						}
+					});
 				}
 				else
 				{
 					// If an existing call to all() has been made, wait for that
 					allPromise.then(function (all) {
-						// When that resolves, each instance will resolve, and our list as a whole should resolve...
+						// When that resolves, each instance will resolve, and our list as a whole should resolve on it's own...
 						// If not, it means some of the IDs did not exist. Just resolve with the list that did exist...
-						// list() will be populated as each individual one was added to the cache, so we can just add that
 						if (Promise.allSet(allCurrentPromises) == false) { 
 							listProm.resolve(list); 
 						}
