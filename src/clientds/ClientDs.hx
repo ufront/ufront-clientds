@@ -170,7 +170,7 @@ using tink.core.Outcome;
 							}
 						});
 				}
-
+				
 				if (newRequests.length > 0 && allPromise == null)
 				{
 					// Otherwise, create a new call just to retrieve these specific objects
@@ -181,7 +181,7 @@ using tink.core.Outcome;
 						}
 					});
 				}
-				else
+				else if (newRequests.length > 0 && allPromise != null)
 				{
 					// If an existing call to all() has been made, wait for that
 					allPromise.then(function (all) {
@@ -191,6 +191,11 @@ using tink.core.Outcome;
 							listProm.resolve(list); 
 						}
 					});
+				}
+				else if (newRequests.length == 0)
+				{
+					// No new requests, just wait for the existing ones.
+					// They will resolve in their own time (part of the "for (id in ids)" loop above).
 				}
 			}
 			else 
