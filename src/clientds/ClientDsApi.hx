@@ -11,10 +11,13 @@ import clientds.ClientDsResultSet;
 import clientds.ClientDsRequest;
 #if server 
 	import sys.db.Manager;
+	import ufront.sys.SysUtil;
 #end 
 
 class ClientDsApi extends UFApi
 {
+	@inject("contentDirectory") public var contentDir:String;
+
 	public function get(req:ClientDsRequest, fetchRel:Bool):Outcome<ClientDsResultSet, String>
 	{
 		try 
@@ -30,7 +33,9 @@ class ClientDsApi extends UFApi
 
 	public function getCached(req:ClientDsRequest, fetchRel:Bool, cacheName:String):String
 	{
-		var cacheFile = neko.Web.getCwd() + "cache/" + cacheName;
+		var dir = contentDir + "cache/";
+		SysUtil.mkdir( dir );
+		var cacheFile = dir + cacheName;
 		var rsSerialised:String;
 		
 		if (sys.FileSystem.exists(cacheFile))
