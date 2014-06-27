@@ -151,6 +151,19 @@ using tink.core.Outcome;
 					}
 				}
 
+				// When we asked for many, but not all came in, we need to resolve the list anyway. 
+				// The others probably just don't exist, but that's fine, we'll resolve what we have.
+				// We need to `unset` the unresolved promises though so if they are requested again, it will try load them again.
+				// If it fails that time too, that is fine - at least when it fails it will call this method again and resolve the list.
+				function dealWithUnresolvedPromises()
+				{
+					for (id in unfulfilledPromises)
+					{
+						ds.remove(id);
+					}
+					listProm.resolve(list);
+				}
+
 				// As the existing promises are fulfilled, tick them off
 				var allCurrentPromises = [];
 				for (id in ids)
@@ -177,7 +190,7 @@ using tink.core.Outcome;
 					var req = new ClientDsRequest().getMany(cast model, newRequests);
 					processRequest(req).then(function (rs) {
 						if (Promise.allSet(allCurrentPromises) == false) { 
-							listProm.resolve(list); 
+							dealWithUnresolvedPromises();
 						}
 					});
 				}
@@ -188,7 +201,7 @@ using tink.core.Outcome;
 						// When that resolves, each instance will resolve, and our list as a whole should resolve on it's own...
 						// If not, it means some of the IDs did not exist. Just resolve with the list that did exist...
 						if (Promise.allSet(allCurrentPromises) == false) { 
-							listProm.resolve(list); 
+							dealWithUnresolvedPromises();
 						}
 					});
 				}
