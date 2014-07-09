@@ -1,11 +1,12 @@
 package clientds;
 
 import sys.db.Types;
-using tink.core.Outcome;
+using tink.CoreApi;
 using Lambda;
 import ufront.api.UFApi;
 import ufront.db.Object;
 import ufront.db.ManyToMany;
+import ufront.web.HttpError;
 import haxe.ds.*;
 import clientds.ClientDsResultSet;
 import clientds.ClientDsRequest;
@@ -34,7 +35,6 @@ class ClientDsApi extends UFApi
 	public function getCached(req:ClientDsRequest, fetchRel:Bool, cacheName:String):String
 	{
 		var dir = contentDir + "cache/";
-		SysUtil.mkdir( dir );
 		var cacheFile = dir + cacheName;
 		var rsSerialised:String;
 		
@@ -44,20 +44,38 @@ class ClientDsApi extends UFApi
 		}
 		else
 		{
-			var result = get(req, fetchRel);
-			rsSerialised = haxe.Serializer.run(result);
-
-			try 
-			{
-				sys.io.File.saveContent(cacheFile, rsSerialised);
-			}
-			catch (e:Dynamic) 
-			{
-				trace ("Could not write cache file for coredata: " + e);
-			}
+			rsSerialised = reloadCache(req,fetchRel,cacheName).sure();
 		}
 
 		return rsSerialised;
+	}
+
+	public function reloadCache(req:ClientDsRequest, fetchRel:Bool, cacheName:String):Outcome<String,Error>
+	{
+		var dir = contentDir + "cache/";
+		var cacheFile = dir + cacheName;
+		var rsSerialised:String = null;
+		
+		try
+		{
+			var result = get(req, fetchRel);
+			rsSerialised = haxe.Serializer.run(result);
+			SysUtil.mkdir( dir );
+			sys.io.File.saveContent(cacheFile, rsSerialised);
+		}
+		catch (e:Dynamic) 
+		{
+			if ( rsSerialised==null )
+			{
+				return Failure( HttpError.internalServerError('Failed to fetch ClientDS request: $e', e) );
+			}
+			else
+			{
+				// There was an error, but it's non fatal. Let's log it and still return a Success.
+				trace( 'Failed to save ClientDS cache $cacheFile: $e' );
+			}
+		}
+		return Success( rsSerialised );
 	}
 
 	/** 
