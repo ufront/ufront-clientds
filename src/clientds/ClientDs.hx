@@ -98,14 +98,39 @@ using tink.core.Outcome;
 				{
 					// Otherwise, create a new call just to retrieve this object
 					var req = new ClientDsRequest().get(cast model, id);
-					processRequest(req);
+					processRequest(req).then(function(result) {
+						checkForUnresolvedPromises([p],[id]);
+					});
 				}
-				// else 
-					// If an existing call to all() has been made, wait for that
-					// processRequest() will unpack the all and resolve our promise
+				else
+				{
+					// If an existing call to all() has been made, wait for that.
+					// processRequest() will unpack the all and resolve our promise.
+					allPromise.then(function (all) {
+						// If it doesn't, then it must be because this ID didn't exist on the server.
+						checkForUnresolvedPromises([p],[id]);
+					});
+				}
 
 				return p;
 			}
+		}
+
+		function checkForUnresolvedPromises( promises:Array<Promise<T>>, ids:Array<Int> )
+		{
+			if (Promise.allSet(promises) == false)
+			{
+				for (id in ids)
+				{
+					var p = ds.get(id);
+					if (@:privateAccess p._set==false) {
+						p.resolve( null );
+						ds.remove(id);
+					}
+				}
+				return true;
+			}
+			return false;
 		}
 
 		/** 
@@ -151,19 +176,6 @@ using tink.core.Outcome;
 					}
 				}
 
-				// When we asked for many, but not all came in, we need to resolve the list anyway. 
-				// The others probably just don't exist, but that's fine, we'll resolve what we have.
-				// We need to `unset` the unresolved promises though so if they are requested again, it will try load them again.
-				// If it fails that time too, that is fine - at least when it fails it will call this method again and resolve the list.
-				function dealWithUnresolvedPromises()
-				{
-					for (id in unfulfilledPromises)
-					{
-						ds.remove(id);
-					}
-					listProm.resolve(list);
-				}
-
 				// As the existing promises are fulfilled, tick them off
 				var allCurrentPromises = [];
 				for (id in ids)
@@ -173,7 +185,9 @@ using tink.core.Outcome;
 					p
 						.then(function (obj) { 
 							// Add the object to our return list, and remove it from our list of unfulfilled promises.  
-							list.set(id, obj);
+							if (obj!=null) {
+								list.set(id, obj);
+							}
 							unfulfilledPromises.remove(id); 
 							// Once all promises are fulfilled
 							if (unfulfilledPromises.length == 0)
@@ -189,23 +203,19 @@ using tink.core.Outcome;
 					// Otherwise, create a new call just to retrieve these specific objects
 					var req = new ClientDsRequest().getMany(cast model, newRequests);
 					processRequest(req).then(function (rs) {
-						if (Promise.allSet(allCurrentPromises) == false) { 
-							dealWithUnresolvedPromises();
-						}
+						checkForUnresolvedPromises(allCurrentPromises,unfulfilledPromises);
 					});
 				}
 				else if (newRequests.length > 0 && allPromise != null)
 				{
-					// If an existing call to all() has been made, wait for that
+					// If an existing call to all() has been made, wait for that.
 					allPromise.then(function (all) {
 						// When that resolves, each instance will resolve, and our list as a whole should resolve on it's own...
-						// If not, it means some of the IDs did not exist. Just resolve with the list that did exist...
-						if (Promise.allSet(allCurrentPromises) == false) { 
-							dealWithUnresolvedPromises();
-						}
+						// If not, it means some of the IDs did not exist. Resolve them as null, and the list will resolve itslef.
+						checkForUnresolvedPromises(allCurrentPromises,unfulfilledPromises);
 					});
 				}
-				else if (newRequests.length == 0)
+				else
 				{
 					// No new requests, just wait for the existing ones.
 					// They will resolve in their own time (part of the "for (id in ids)" loop above).
