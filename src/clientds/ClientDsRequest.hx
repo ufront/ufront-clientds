@@ -88,8 +88,10 @@ class ClientDsRequest
 				if ( r.all )
 					items.push( '$name.all()' );
 
-				if ( r.search.length>0  )
-					items.push( '$name.search(${r.search.join(", ")})' );
+				if ( r.search.length>0  ) {
+					var searchStrings = [ for (s in r.search) haxe.Json.stringify( s ) ];
+					items.push( '$name.search(${searchStrings.join(", ")})' );
+				}
 
 				if ( r.get.length>0 )
 					items.push( '$name.get(${r.get.length} item(s): ${r.get})' );
