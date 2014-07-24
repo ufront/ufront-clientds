@@ -60,7 +60,10 @@ class ClientDsResultSet
 
 	function guessName( items:Iterable<Object> ) {
 		var name = "";
-		for ( i in items ) name = Type.getClassName( Type.getClass(i) );
+		for ( i in items ) {
+			name = Type.getClassName( Type.getClass(i) );
+			break;
+		}
 		return name;
 	}
 
