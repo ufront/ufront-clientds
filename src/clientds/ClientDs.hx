@@ -17,27 +17,27 @@ using tink.core.Outcome;
 		// Factory
 		//
 
-		/** 
-		* Get (or create) a ClientDS for the given model.  
+		/**
+		* Get (or create) a ClientDS for the given model.
 		*
 		* If you're using Object, this will be attached to your models on the client in the same way
 		* that a manager is attached on the server, essentially:
 		*
 		*     static var clientDS:ClientDs<MyModel> = ClientDs.getClientDsFor(MyModel);
-		* 
+		*
 		* @param The model to get a client for
 		* @return The ClientDS (DataStore) for that model
 		*/
 		public static function getClientDsFor<W:Object>(model:Class<W>):ClientDs<W>
 		{
 			if (stores == null) stores = new StringMap();
-			
+
 			var name = Type.getClassName(model);
 			if (stores.exists(name))
 			{
 				return cast stores.get(name);
 			}
-			else 
+			else
 			{
 				var ds = new ClientDs(model);
 				stores.set(name, cast ds);
@@ -71,8 +71,8 @@ using tink.core.Outcome;
 			this.searchPromises = new StringMap();
 		}
 
-		/** 
-		* Fetch an object for the given ID.  
+		/**
+		* Fetch an object for the given ID.
 		*
 		* @param The id of the object to get.
 		* @return This returns a promise.  When the object is received (or if it's already cached), the promise
@@ -82,18 +82,18 @@ using tink.core.Outcome;
 		public function get(id:SUId):Promise<Null<T>>
 		{
 			if (api == null) throw "Please set static property 'api' before using ClientDs";
-			
-			if (ds.exists(id)) 
-			{ 
+
+			if (ds.exists(id))
+			{
 				// If it already exists, return that promise.
-				return ds.get(id); 
+				return ds.get(id);
 			}
-			else 
+			else
 			{
 				// Else, create the promise
 				var p = new Promise<T>();
 				ds.set(id, p);
-				
+
 				if (allPromise == null)
 				{
 					// Otherwise, create a new call just to retrieve this object
@@ -133,14 +133,14 @@ using tink.core.Outcome;
 			return false;
 		}
 
-		/** 
+		/**
 		* Fetch a bunch of objects given a bunch of IDs.
 		*
 		* This will try to be clever and not request objects that are already in the cache or being processed.
 		*
 		* Promises will be created for each ID so they are available in the cache.  The promise that
 		* is returned here will only fire when every object is available.
-		* 
+		*
 		* @param The ids of the model to get.  eg clientDS.getMany([1,2,3,4]);
 		* @return The promise returned is for an IntMap containing all of the matched objects.  The
 		*    key is the ID, the value the actual object.  If an object was not found, it will not be
@@ -151,7 +151,7 @@ using tink.core.Outcome;
 		public function getMany(ids:Array<SUId>):Promise<IntMap<T>>
 		{
 			if (api == null) throw "Please set static property 'api' before using ClientDs";
-			
+
 			// Create a promise for the overall list
 			var listProm = new Promise<IntMap<T>>();
 			var list = new IntMap();
@@ -168,7 +168,7 @@ using tink.core.Outcome;
 					{
 						existingPromises.push(id);
 					}
-					else 
+					else
 					{
 						// Create a promise for each of the new requests
 						newRequests.push(id);
@@ -183,12 +183,12 @@ using tink.core.Outcome;
 					var p = ds.get(id);
 					allCurrentPromises.push(p);
 					p
-						.then(function (obj) { 
-							// Add the object to our return list, and remove it from our list of unfulfilled promises.  
+						.then(function (obj) {
+							// Add the object to our return list, and remove it from our list of unfulfilled promises.
 							if (obj!=null) {
 								list.set(id, obj);
 							}
-							unfulfilledPromises.remove(id); 
+							unfulfilledPromises.remove(id);
 							// Once all promises are fulfilled
 							if (unfulfilledPromises.length == 0)
 							{
@@ -197,7 +197,7 @@ using tink.core.Outcome;
 							}
 						});
 				}
-				
+
 				if (newRequests.length > 0 && allPromise == null)
 				{
 					// Otherwise, create a new call just to retrieve these specific objects
@@ -221,7 +221,7 @@ using tink.core.Outcome;
 					// They will resolve in their own time (part of the "for (id in ids)" loop above).
 				}
 			}
-			else 
+			else
 			{
 				listProm.resolve(list);
 			}
@@ -230,17 +230,17 @@ using tink.core.Outcome;
 			return listProm;
 		}
 
-		/** 
-		* Fetch all the objects belonging to a given model. 
+		/**
+		* Fetch all the objects belonging to a given model.
 		*
 		* Promises will be created for each ID so they are available in the cache.  The promise that
-		* is returned here will only fire when every object is available.  If some of the objects 
-		* are already in the cache, they will be reloaded. 
+		* is returned here will only fire when every object is available.  If some of the objects
+		* are already in the cache, they will be reloaded.
 		*
 		* If you have already called this and it is in the cache, or currently processing, the same
 		* promise will be returned.  Call refreshAll() to get a fresh copy.
-		* 
-		* @return The promise returned is for an IntMap containing all of the objects in this model.  
+		*
+		* @return The promise returned is for an IntMap containing all of the objects in this model.
 		*    The key is the ID, the value the actual object.
 		* @throws (String) an error message, if ClientDs.api has not been set.
 		*/
@@ -249,7 +249,7 @@ using tink.core.Outcome;
 			if (allPromise == null)
 			{
 				if (api == null) throw "Please set static property 'api' before using ClientDs";
-				
+
 				allPromise = new Promise();
 
 				// Make the API call
@@ -260,19 +260,19 @@ using tink.core.Outcome;
 			return allPromise;
 		}
 
-		/** 
-		* Fetch all the objects belonging that match the search criteria. 
+		/**
+		* Fetch all the objects belonging that match the search criteria.
 		*
 		* If allPromise is available, (ie, if you have called all()), then we will filter objects on the
-		* client side.  Otherwise, we will call Manager.dynamicSearch() on the server. 
-		* 
+		* client side.  Otherwise, we will call Manager.dynamicSearch() on the server.
+		*
 		* Promises will be created for each ID so they are available in the cache.  The promise that
-		* is returned here will fire when all matched objects are available.  If some of the 
-		* matching objects are already in the cache, they will be reloaded. 
-		* 
-		* If you have already searched for this and it is in the cache, or currently processing, 
+		* is returned here will fire when all matched objects are available.  If some of the
+		* matching objects are already in the cache, they will be reloaded.
+		*
+		* If you have already searched for this and it is in the cache, or currently processing,
 		* the same promise will be returned.  Use refreshSearch() to get a fresh copy.
-		* 
+		*
 		* @param A dynamic object specifying the criteria to match.  Usage is the same as manager.dynamicSearch()
 		* @return The promise returned is for an IntMap containing all of the matched objects.  The
 		*    key is the ID, the value the actual object.
@@ -301,7 +301,7 @@ using tink.core.Outcome;
 			{
 				// No existing cache, so do a call to the API, which will do a dynamicSearch()
 				if (api == null) throw "Please set static property 'api' before using ClientDs";
-				
+
 				prom = new Promise();
 				searchPromises.set(criteriaStr, prom);
 
@@ -418,7 +418,7 @@ using tink.core.Outcome;
 		* @return A promise for the result set.  Is actually an Outcome, with Success containing the ClientDsResultSet,
 		*   and Failure containing the error message (String).
 		*/
-		public static function processRequest(req:ClientDsRequest, ?fetchRel=false, ?cacheName:String):Promise<Outcome<StringMap<IntMap<Object>>, String>> 
+		public static function processRequest(req:ClientDsRequest, ?fetchRel=false, ?cacheName:String):Promise<Outcome<StringMap<IntMap<Object>>, String>>
 		{
 			if (api == null) throw "Please set static property 'api' before using ClientDs";
 
@@ -446,7 +446,7 @@ using tink.core.Outcome;
 					if (p == null || Promise.allSet([p]))
 						clientDs.searchPromises.set(criteriaStr, new Promise());
 				}
-				
+
 				// Create / recreate promises for any get requests
 				for (id in r.get)
 				{
@@ -455,11 +455,11 @@ using tink.core.Outcome;
 						clientDs.ds.set(id, new Promise());
 				}
 
-				// We don't create a separate promise for the getMany requests... 
+				// We don't create a separate promise for the getMany requests...
 				// If myClientDs.getMany() is called, it will check against the individual
 				// ids, rather than against them as a set. So we only need to track individuals.
 			}
-			
+
 			// Process the request, resolve the response outcome
 			if (req.empty == false)
 			{
@@ -474,10 +474,10 @@ using tink.core.Outcome;
 					api.get(req, fetchRel, function (results) {
 						switch(results)
 						{
-							case Success(rs): 
+							case Success(rs):
 								var map = processResultSet(rs);
 								resultSetPromise.resolve( Success(map) );
-							case Failure(error): 
+							case Failure(error):
 								resultSetPromise.resolve( Failure(error) );
 						}
 					});
@@ -488,33 +488,33 @@ using tink.core.Outcome;
 						var resultObj = haxe.Unserializer.run(result);
 						switch(resultObj)
 						{
-							case Success(rs): 
+							case Success(rs):
 								var map = processResultSet(rs);
 								resultSetPromise.resolve( Success(map) );
-							case Failure(error): 
+							case Failure(error):
 								resultSetPromise.resolve( Failure(error) );
 						}
 					});
 				}
 
 			}
-			else 
+			else
 			{
 				resultSetPromise.resolve( Success(new StringMap()) );
 			}
 			return resultSetPromise;
 		}
 
-		/** 
+		/**
 		* Save many objects to the server at once.
-		* 
+		*
 		* Currently does not perform bulk SQL insert operations.  This will call save() on the server and so
 		* insert() or update() the object.  All validation and permission checks still take place.
-		* 
+		*
 		* @param A StringMap, key=modelName, value=[array of objects to save]
 		* @return A promise for the same map that was input, but the IDs were updated as they were saved.
 		* @throws (String) an error message, if ClientDs.api has not been set.
-		* @reject The promise is rejected if some objects failed to save.  The rejection throws an anonymous 
+		* @reject The promise is rejected if some objects failed to save.  The rejection throws an anonymous
 		*   object: { failed: [ { o:failedObject, err:errorMessage }], saved: [successfully saved objects] }.  Any failures will also
 		*   trace an error message for now.  I should come up with a better system though.
 		*/
@@ -557,13 +557,13 @@ using tink.core.Outcome;
 			return p;
 		}
 
-		/** 
+		/**
 		* Delete the specified objects from the server
-		* 
+		*
 		* @param a StringMap, key=modelName, value=[array of objects to delete]
 		* @return A promise for the same map that was input
 		* @throws (String) an error message, if ClientDs.api has not been set.
-		* @reject The promise is rejected if some objects failed to dekete.  The rejection throws an anonymous 
+		* @reject The promise is rejected if some objects failed to dekete.  The rejection throws an anonymous
 		*   object: { failed: [failed objects], deleted: [successfully deleted objects] }.  Any failures will also
 		*   trace an error message for now.  I should come up with a better system though.
 		*/
@@ -620,9 +620,9 @@ using tink.core.Outcome;
 			var promisesToResolve:Array<Promise<Dynamic>> = [];
 
 			// Print the number of found objects...
-			#if debug 
+			#if debug
 				trace ('Received these objects: ${rs.toString()}');
-			#end 
+			#end
 
 			// Add all of the items in each model, resolve item promises
 			for (model in rs.models())
@@ -660,7 +660,7 @@ using tink.core.Outcome;
 					// Create / Recreate the promise if needed
 					if (modelDS.allPromise == null || Promise.allSet([modelDS.allPromise]))
 						modelDS.allPromise	= new Promise();
-					
+
 					// Set the promise value
 					PromiseAbuse.setWithoutFiring(modelDS.allPromise, rs.items(model));
 					promisesToResolve.push(modelDS.allPromise);
@@ -677,10 +677,10 @@ using tink.core.Outcome;
 						p = new Promise();
 						modelDS.searchPromises.set(criteriaStr, p);
 					}
-					
+
 					// Set the promise value
 					var results = rs.searchResults(model,criteria);
-					if (results != null) 
+					if (results != null)
 					{
 						PromiseAbuse.setWithoutFiring(p, results);
 						promisesToResolve.push(p);
@@ -692,9 +692,9 @@ using tink.core.Outcome;
 			// But here, we've set all of our promises, now fire the handlers
 			for (p in promisesToResolve)
 			{
-				try 
+				try
 				{
-					PromiseAbuse.fireWithoutSetting(p);	
+					PromiseAbuse.fireWithoutSetting(p);
 				}
 				catch (e:String)
 				{
@@ -721,4 +721,4 @@ using tink.core.Outcome;
 			return map;
 		}
 	}
-#end 
+#end

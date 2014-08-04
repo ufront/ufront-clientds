@@ -8,7 +8,7 @@ using Lambda;
 typedef ObjectList = IntMap<Object>;
 typedef TypedObjectList<T:ufront.db.Object> = IntMap<T>;
 
-class ClientDsResultSet 
+class ClientDsResultSet
 {
 	public var length(default,null):Int;
 	var m:StringMap<ObjectList>; // [ modelName => [ id => object ] ]
@@ -32,12 +32,13 @@ class ClientDsResultSet
 		// get the IntMap for this model
 		if (!m.exists(name)) m.set(name, new IntMap());
 		var intMap = m.get(name);
-		
+
 		// Populate it
 		for (i in items)
 		{
+			if (!intMap.exists(i.id))
+				length++;
 			intMap.set(i.id, i);
-			length++;
 		}
 		return intMap;
 	}
@@ -111,12 +112,15 @@ class ClientDsResultSet
 		if (hasSearchRequest(name, criteria))
 		{
 			// Filter the list by criteria and return them
+			var total = Lambda.count(m.get(name));
+			var result = Lambda.count(ClientDsUtil.filterByCriteria(m.get(name),criteria));
+			var criteriaStr = haxe.Json.stringify( criteria );
 			return cast ClientDsUtil.filterByCriteria(m.get(name), criteria);
 		}
 		return null;
 	}
 
-	public function toString():String 
+	public function toString():String
 	{
 		var sb = new StringBuf();
 		sb.add('Found $length items total \n');
@@ -124,19 +128,19 @@ class ClientDsResultSet
 		{
 			var name = Type.getClassName(model);
 			var count = items(model).count();
-			sb.add('  $name : $count items \n');
+			sb.add('  $name : $count items\n');
 		}
 		return sb.toString();
 	}
 
 	// Functions so we can check if a new request has to be made
 
-	public function hasGetRequest(name:String, id:SUId) 
+	public function hasGetRequest(name:String, id:SUId)
 		return (allRequests.indexOf(name) != -1) || (m.exists(name) && m.get(name).exists(id));
 
-	public function hasAllRequest(name:String) 
+	public function hasAllRequest(name:String)
 		return allRequests.indexOf(name) != -1;
-	
+
 	public function hasGetManyRequest(name:String, ids:Array<SUId>)
 	{
 		if (allRequests.indexOf(name) != -1) return true;
@@ -150,12 +154,12 @@ class ClientDsResultSet
 		}
 		return true;
 	}
-	
-	public function hasSearchRequest(name:String, criteria:{}) 
+
+	public function hasSearchRequest(name:String, criteria:{})
 	{
 		var matchFound = false;
 		if (allRequests.indexOf(name) != -1)
-		{			
+		{
 			matchFound = true;
 		}
 		else if (searchRequests.exists(name))
