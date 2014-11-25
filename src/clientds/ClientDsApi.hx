@@ -170,7 +170,7 @@ class ClientDsApi extends UFApi
 	}
 
 	@:access(sys.db.Manager)
-	function doGet(req:ClientDsRequest, ?resultSet:ClientDsResultSet, ?originalRequest=true, ?fetchRel:Bool):ClientDsResultSet
+	function doGet(req:ClientDsRequest, ?resultSet:ClientDsResultSet, ?originalRequest:Bool=true, ?fetchRel:Bool):ClientDsResultSet
 	{
 		if (resultSet == null) resultSet = new ClientDsResultSet();
 
@@ -287,7 +287,18 @@ class ClientDsApi extends UFApi
 							{
 								// Add the items to the result set
 								var list = joins.get(aID);
-								for (bID in list) addGetToRequestIfNotInResultSet(rs, req, r.model, bID);
+								for (bID in list) {
+									addGetToRequestIfNotInResultSet(rs, req, r.model, bID);
+								}
+								
+								// TODO:
+								// If we have a corrupt join table, where some of the join records do not have matching objects,
+								// we can get stuck in an infinite loop here.  How it happens: we request an object, and fetchRel==true,
+								// so we do a getMany( relatedIDs ), but if one of those IDs doesn't exist, we'll get to the end of get(),
+								// fetchRel is still true, but it realizes we're still missing some objects (the ones that don't exist),
+								// so it gets stuck in a loop.
+								// The solution will be to change addGetToRequestIfNotInResultSet(), to also check that it's not something
+								// we searched for already but didn't exist.
 
 								// Let's take the time to initiate the private ManyToMany variable
 								var o = l.get(aID);
@@ -320,19 +331,19 @@ class ClientDsApi extends UFApi
 				}
 			}
 		}
-
 		return req;
 	}
 
-	function addGetToRequestIfNotInResultSet(rs:ClientDsResultSet, req:ClientDsRequest, model:Class<Object>, id, ?fetchRelations):ClientDsRequest
+	function addGetToRequestIfNotInResultSet(rs:ClientDsResultSet, req:ClientDsRequest, model:Class<Object>, id:Int, ?fetchRelations:Bool):ClientDsRequest
 	{
-		if (!rs.hasGetRequest(Type.getClassName(model), id))
+		if (!rs.hasGetRequest(Type.getClassName(model), id)) {
 			req.get(model, id);
+		}
 
 		return req;
 	}
 
-	function addSearchToRequestIfNotInResultSet(rs:ClientDsResultSet, req:ClientDsRequest, model:Class<Object>, criteria, ?fetchRelations):ClientDsRequest
+	function addSearchToRequestIfNotInResultSet(rs:ClientDsResultSet, req:ClientDsRequest, model:Class<Object>, criteria:{}, ?fetchRelations:Bool):ClientDsRequest
 	{
 		if (!rs.hasSearchRequest(Type.getClassName(model), criteria))
 			req.search(model, criteria);
