@@ -10,6 +10,7 @@ import ufront.web.HttpError;
 import haxe.ds.*;
 import clientds.ClientDsResultSet;
 import clientds.ClientDsRequest;
+import haxe.rtti.Meta;
 #if server 
 	import sys.db.Manager;
 	import ufront.sys.SysUtil;
@@ -28,7 +29,8 @@ class ClientDsApi extends UFApi
 		}
 		catch (e:String)
 		{
-			return Failure(e);
+			var cs = haxe.CallStack.toString( haxe.CallStack.exceptionStack() );
+			return Failure('Failed to get core data: $e\n$cs');
 		}
 	}
 
@@ -60,6 +62,7 @@ class ClientDsApi extends UFApi
 		{
 			var result = get(req, fetchRel);
 			rsSerialised = haxe.Serializer.run(result);
+			haxe.Unserializer.run( rsSerialised );
 			SysUtil.mkdir( dir );
 			sys.io.File.saveContent(cacheFile, rsSerialised);
 		}
@@ -246,10 +249,9 @@ class ClientDsApi extends UFApi
 		{
 			var l:IntMap<Object> = rs.items(model);
 
-			var relationshipStrings:Array<String> = Reflect.field(model, "hxRelationships");
-			// relationshipStrings = [ propertyName, relationType, relatedModel, ?relationKey ]
+			var relationshipStrings:Array<String> = cast Meta.getType(model).ufRelationships;
 
-			if (relationshipStrings.length > 0)
+			if (relationshipStrings!=null && relationshipStrings.length > 0)
 			{
 				var relationships:Array<{property:String,relType:String,model:Class<Object>,foreignKey:Null<String>}> = [];
 				for (s in relationshipStrings)
@@ -304,7 +306,7 @@ class ClientDsApi extends UFApi
 								var o = l.get(aID);
 								var m2m = new ManyToMany(o, r.model, false);
 								m2m.bListIDs = list;
-								Reflect.setField(o, "_"+r.property, m2m);
+								Reflect.setField(o, r.property, m2m);
 							}
 						}
 					}
