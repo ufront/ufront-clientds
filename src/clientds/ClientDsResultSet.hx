@@ -3,6 +3,7 @@ package clientds;
 import haxe.ds.*;
 import ufront.db.Object;
 import sys.db.Types;
+import thx.core.Dynamics;
 using Lambda;
 
 typedef ObjectList = IntMap<Object>;
@@ -166,7 +167,7 @@ class ClientDsResultSet
 		{
 			for (c in searchRequests.get(name))
 			{
-				if (Objects.compare(criteria, c) == 0)
+				if (Dynamics.equals(criteria,c))
 				{
 					matchFound = true;
 					break;

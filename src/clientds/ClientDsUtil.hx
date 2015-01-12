@@ -2,7 +2,7 @@ package clientds;
 
 import ufront.db.Object;
 import haxe.ds.*;
-import Dynamics;
+import thx.core.Dynamics;
 
 class ClientDsUtil
 {
@@ -16,7 +16,7 @@ class ClientDsUtil
 			{
 				var criteriaValue = Reflect.field(criteria, field);
 				var objValue = Reflect.getProperty(obj, field);
-				if (Dynamics.same(criteriaValue,objValue) == false)
+				if (Dynamics.equals(criteriaValue,objValue) == false)
 				{
 					match = false;
 					break;
