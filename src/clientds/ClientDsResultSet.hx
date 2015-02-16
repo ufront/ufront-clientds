@@ -28,10 +28,15 @@ class ClientDsResultSet
 
 	public function addItems(?name:String, items:Iterable<Object>)
 	{
-		if ( name==null ) name = guessName( items );
+		if ( name==null )
+			name = guessName( items );
+		if ( name=="" )
+			// No items and no name, return an empty IntMap
+			return new IntMap();
 
 		// get the IntMap for this model
-		if (!m.exists(name)) m.set(name, new IntMap());
+		if (!m.exists(name))
+			m.set(name, new IntMap());
 		var intMap = m.get(name);
 
 		// Populate it
@@ -46,18 +51,25 @@ class ClientDsResultSet
 
 	public function addAll(?name:String, items:Iterable<Object>)
 	{
-		if ( name==null ) name = guessName( items );
-		if (!allRequests.has(name)) allRequests.push(name);
+		if ( name==null )
+			name = guessName( items );
+		if ( name!="" && !allRequests.has(name) )
+			allRequests.push(name);
 		return addItems(name, items);
 	}
 
 	public function addSearchResults(?name:String, criteria:{}, items:Iterable<Object>)
 	{
-		if ( name==null ) name = guessName( items );
-		if (!searchRequests.exists(name)) searchRequests.set(name, []);
-		searchRequests.get(name).push(criteria);
-
-		return addItems(name, items);
+		if ( name==null )
+			name = guessName( items );
+		if ( name!="" ) {
+			if ( !searchRequests.exists(name) )
+				searchRequests.set(name, []);
+			searchRequests.get(name).push(criteria);
+			return addItems(name, items);
+		}
+		// No name and no items, return an empty IntMap
+		return new IntMap();
 	}
 
 	function guessName( items:Iterable<Object> ) {
@@ -83,7 +95,7 @@ class ClientDsResultSet
 
 	public function models():Array<Class<Object>>
 	{
-		return cast [ for (n in m.keys()) Type.resolveClass(n) ];
+		return cast [ for (n in m.keys()) if (n!="") Type.resolveClass(n) ];
 	}
 
 	public function items<T:Object>(model:Class<T>):TypedObjectList<T>
