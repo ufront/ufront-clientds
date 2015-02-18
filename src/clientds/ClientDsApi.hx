@@ -60,7 +60,13 @@ class ClientDsApi extends UFApi
 		
 		try
 		{
+			trace('Reloading cache for request: $req');
+			trace('Fetch relationships: $fetchRel');
+			trace('Cache name: $cacheName');
 			var result = get(req, fetchRel);
+			trace('Received this response: $result');
+			// Throw an error if the get() request failed, so we can retry.
+			result.sure();
 			rsSerialised = haxe.Serializer.run(result);
 			haxe.Unserializer.run( rsSerialised );
 			SysUtil.mkdir( dir );
