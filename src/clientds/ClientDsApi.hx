@@ -196,7 +196,7 @@ class ClientDsApi extends UFApi
 			var allList:List<Object> = null;
 			if (requests.all)
 			{
-				allList = manager.all();
+				allList = manager.all(false);
 				var intMap = resultSet.addAll(name, allList);
 			}
 
@@ -208,7 +208,7 @@ class ClientDsApi extends UFApi
 				if (!requests.all)
 				{
 					// Else, make a new request
-					var list = manager.dynamicSearch(criteria);
+					var list = manager.dynamicSearch(criteria,false);
 					resultSet.addSearchResults(name, criteria, list);
 				}
 				// else 
