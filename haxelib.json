@@ -5,8 +5,8 @@
   "tags": ["ufront","db","web","js","neko","php","client","remoting"],
   "description": "ClientDS is a Client Data Store that works with ufront-orm and the remoting APIs in ufront-mvc to let you easily fetch, cache and update database objects from the client.",
   "contributors": ["fponticelli","jason"],
-  "releasenote": "Update for new thx.core.",
-  "version": "1.0.0-beta.8",
+  "releasenote": "Small bug fix in ClientDSResponse.toString(). No longer lock DB rows when using get() and getCached() - this was causing issues on complex data sets.",
+  "version": "1.0.0-beta.9",
   "url": "https://github.com/ufront/ufront-clientds",
   "dependencies": {
     "ufront-orm": "",
